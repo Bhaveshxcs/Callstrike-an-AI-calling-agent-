@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CallStrike Dashboard</title>
+    <style>
+        :root {
+            --primary: #39ff14;
+            --primary-light: #7aff6b;
+            --primary-dark: #0f7a00;
+            --bg-color: #2d2d2d;
+            --glass-bg: #1a1a1a;
+            --glass-border: #444;
+            --text-main: #ffffff;
+            --text-muted: #aaaaaa;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Courier New', Courier, monospace;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 1.5rem;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 450px;
+            background: var(--glass-bg);
+            border: 4px solid var(--glass-border);
+            border-radius: 0;
+            padding: 2rem;
+            box-shadow: 8px 8px 0px rgba(0, 0, 0, 0.8);
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .header h1 {
+            font-size: 2rem;
+            font-weight: bold;
+            margin-bottom: 0.5rem;
+            color: var(--primary);
+            text-shadow: 2px 2px 0px var(--primary-dark);
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        .header p {
+            color: var(--text-muted);
+            font-size: 0.9rem;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        label {
+            display: block;
+            font-size: 0.9rem;
+            font-weight: bold;
+            margin-bottom: 0.5rem;
+            color: var(--primary);
+            text-transform: uppercase;
+            text-shadow: 1px 1px 0px #000;
+        }
+
+        input, textarea {
+            width: 100%;
+            background: #111;
+            border: 2px solid #555;
+            border-radius: 0;
+            padding: 1rem;
+            color: var(--text-main);
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 1rem;
+            transition: none;
+        }
+
+        input:focus, textarea:focus {
+            outline: none;
+            border-color: var(--primary);
+        }
+
+        textarea {
+            resize: vertical;
+            min-height: 100px;
+        }
+
+        hr {
+            border: 1px solid var(--glass-border);
+            margin: 1.5rem 0;
+        }
+
+        .btn {
+            width: 100%;
+            background-color: #7b7b7b;
+            color: #fff;
+            border: 4px solid;
+            border-color: #a9a9a9 #3b3b3b #3b3b3b #a9a9a9;
+            border-radius: 0;
+            padding: 1rem;
+            font-size: 1.1rem;
+            font-weight: bold;
+            font-family: 'Courier New', Courier, monospace;
+            cursor: pointer;
+            text-shadow: 1px 1px 0px #000;
+        }
+
+        .btn:hover:not(:disabled) {
+            background-color: var(--primary-dark);
+            border-color: var(--primary-light) #003a00 #003a00 var(--primary-light);
+            color: #fff;
+        }
+
+        .btn:active:not(:disabled) {
+            border-color: #3b3b3b #a9a9a9 #a9a9a9 #3b3b3b;
+            background-color: #555;
+        }
+
+        .btn:disabled {
+            background-color: #444;
+            color: #777;
+            border-color: #555 #333 #333 #555;
+            cursor: not-allowed;
+            text-shadow: none;
+        }
+
+        #status {
+            margin-top: 1.5rem;
+            text-align: center;
+            font-size: 0.9rem;
+            min-height: 1.5em;
+            font-weight: bold;
+        }
+
+        .success { color: var(--primary); text-shadow: 1px 1px 0px #000; }
+        .error { color: #ff3333; text-shadow: 1px 1px 0px #000; }
+
+        .spinner {
+            display: none;
+        }
+
+        .btn-text {
+            display: block;
+        }
+
+        .loading .btn-text { display: none; }
+        .loading .spinner { display: block; }
+        .loading::after {
+            content: "PROCESSING...";
+            display: block;
+        }
+
+        .summary-card {
+            margin-top: 1.5rem;
+            padding: 1.5rem;
+            background: #111;
+            border: 2px solid var(--glass-border);
+            border-radius: 0;
+            display: none;
+            box-shadow: 4px 4px 0px rgba(0,0,0,0.8);
+        }
+        .summary-card h3 {
+            margin-bottom: 0.5rem;
+            font-size: 1.1rem;
+            color: var(--primary);
+            text-shadow: 1px 1px 0px #000;
+        }
+        .summary-card p {
+            font-size: 0.95rem;
+            line-height: 1.5;
+            white-space: pre-wrap;
+        }
+
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <div class="header">
+            <h1>CallStrike</h1>
+            <p>Trigger your AI calling agent remotely.</p>
+        </div>
+
+        <form id="callForm">
+            <div class="form-group">
+                <label for="to">Target Phone Number</label>
+                <input type="tel" id="to" placeholder="+1234567890" required>
+            </div>
+
+            <div class="form-group">
+                <label for="task">Agent Task</label>
+                <textarea id="task" placeholder="E.g., Ask if they are coming to college tomorrow..." required></textarea>
+            </div>
+            
+            <hr style="border: 1px solid var(--glass-border); margin: 1.5rem 0;">
+            
+            <div class="form-group" style="display: flex; align-items: center; gap: 10px; margin-bottom: 1.5rem;">
+                <input type="checkbox" id="useServerTwilio" style="width: auto; height: 1.2rem; cursor: pointer;">
+                <label for="useServerTwilio" style="margin: 0; font-size: 0.8rem; cursor: pointer; text-transform: none;">I don't have Twilio credentials (Use Server Credits)</label>
+            </div>
+
+            <div id="customTwilioFields">
+                <div class="form-group">
+                    <label for="twilioSid">Twilio Account SID</label>
+                    <input type="text" id="twilioSid" placeholder="Your Twilio SID" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="twilioToken">Twilio Auth Token</label>
+                    <input type="password" id="twilioToken" placeholder="Your Twilio Token" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="twilioNumber">Twilio Phone Number</label>
+                    <input type="tel" id="twilioNumber" placeholder="Your Twilio Number" required>
+                </div>
+            </div>
+
+            <div class="form-group" id="passwordField" style="display: none;">
+                <label for="password">Server Secret Password</label>
+                <input type="password" id="password" placeholder="Enter password to use server credits">
+            </div>
+
+            <hr style="border: 1px solid var(--glass-border); margin: 1.5rem 0;">
+
+            <div class="form-group">
+                <label for="geminiApiKey">Gemini API Key (Optional)</label>
+                <input type="password" id="geminiApiKey" placeholder="Leave empty to use server default">
+            </div>
+
+            <button type="submit" class="btn" id="submitBtn">
+                <span class="btn-text">Initiate Call</span>
+                <div class="spinner"></div>
+            </button>
+        </form>
+
+        <div id="status"></div>
+
+        <div id="summaryCard" class="summary-card">
+            <h3>Call Summary</h3>
+            <p id="summaryText"></p>
+        </div>
+    </div>
+
+    <script>
+        const useServerCheckbox = document.getElementById('useServerTwilio');
+        const customTwilioFields = document.getElementById('customTwilioFields');
+        const passwordField = document.getElementById('passwordField');
+        const passwordInput = document.getElementById('password');
+        const twilioInputs = customTwilioFields.querySelectorAll('input');
+
+        useServerCheckbox.addEventListener('change', (e) => {
+            if (e.target.checked) {
+                customTwilioFields.style.display = 'none';
+                passwordField.style.display = 'block';
+                passwordInput.required = true;
+                twilioInputs.forEach(input => input.required = false);
+            } else {
+                customTwilioFields.style.display = 'block';
+                passwordField.style.display = 'none';
+                passwordInput.required = false;
+                twilioInputs.forEach(input => input.required = true);
+            }
+        });
+
+        document.getElementById('callForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const to = document.getElementById('to').value;
+            const task = document.getElementById('task').value;
+            
+            const useServer = useServerCheckbox.checked;
+            const password = useServer ? passwordInput.value : '';
+            const twilioSid = useServer ? '' : document.getElementById('twilioSid').value;
+            const twilioToken = useServer ? '' : document.getElementById('twilioToken').value;
+            const twilioNumber = useServer ? '' : document.getElementById('twilioNumber').value;
+            const geminiApiKey = document.getElementById('geminiApiKey').value;
+            
+            const btn = document.getElementById('submitBtn');
+            const statusEl = document.getElementById('status');
+            
+            if (!confirm(`You are about to call ${to}. Confirm?`)) {
+                return;
+            }
+            
+            // Set loading state
+            btn.classList.add('loading');
+            btn.disabled = true;
+            statusEl.textContent = '';
+            statusEl.className = '';
+
+            // Cooldown mechanism
+            setTimeout(() => {
+                btn.disabled = false;
+                btn.classList.remove('loading');
+            }, 10000);
+
+            try {
+                const response = await fetch('/make-call', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ to, task, password, twilioSid, twilioToken, twilioNumber, geminiApiKey })
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    statusEl.textContent = 'Call in progress! Waiting for summary...';
+                    statusEl.className = 'success';
+                    
+                    document.getElementById('summaryCard').style.display = 'none';
+
+                    // Start polling for the summary
+                    const pollInterval = setInterval(async () => {
+                        try {
+                            const sumRes = await fetch(`/summary/${data.callSid}?password=${encodeURIComponent(password)}`);
+                            const sumData = await sumRes.json();
+                            
+                            if (sumData.ready) {
+                                clearInterval(pollInterval);
+                                statusEl.textContent = 'Call finished!';
+                                document.getElementById('summaryCard').style.display = 'block';
+                                document.getElementById('summaryText').textContent = sumData.summary;
+                            }
+                        } catch(e) {
+                            // Don't log to console to prevent leaking any info accidentally, although polling is safe
+                        }
+                    }, 5000);
+                    
+                    // Don't re-enable button immediately, let polling do it
+                    return;
+                } else {
+                    statusEl.textContent = data.error || 'Failed to initiate call.';
+                    statusEl.className = 'error';
+                }
+            } catch (error) {
+                statusEl.textContent = 'Network error. Please try again.';
+                statusEl.className = 'error';
+            }
+        });
+    </script>
+</body>
+</html>
