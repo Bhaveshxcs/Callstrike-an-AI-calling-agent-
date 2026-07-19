@@ -7,6 +7,7 @@ const app = express();
 app.use(express.urlencoded({ extended: false })); // Twilio sends application/x-www-form-urlencoded
 app.use(express.json());
 app.use(express.static('public')); // Serve the frontend
+app.set('trust proxy', 1); // Trust first proxy for rate limiting
 
 const PORT = process.env.PORT || 3000;
 const DOMAIN = process.env.SERVER_DOMAIN;
